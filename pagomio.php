@@ -112,7 +112,9 @@ function woocommerce_pagomio_gateway() {
 		 */
 		public function getPagomioObject(){
 			include_once "lib/pagomio/pagomio-sdk-php/pagomio.php";
-			include_once "lib/rmccue/requests/library/Requests.php";
+            if(!class_exists('Requests')){
+			    include_once "lib/rmccue/requests/library/Requests.php";
+            }
 			Requests::register_autoloader();
 			$sandbox = false;
 			if($this->sandbox == "yes"){
@@ -155,7 +157,7 @@ function woocommerce_pagomio_gateway() {
 			// Payment information - Is required
 			$paymentData = new Pagomio\PaymentData();
 			$paymentData->currency = in_array($currency,['COP','USD']) ? $currency : 'COP';
-			$paymentData->reference = $order->id;
+			$paymentData->reference = strval($order->id);
 			$paymentData->totalAmount = $amount;
 			$paymentData->taxAmount = $tax;
 			$paymentData->devolutionBaseAmount = $taxReturnBase;
@@ -215,7 +217,7 @@ function woocommerce_pagomio_gateway() {
 		 */
 		public function get_icon() {
 
-			$icon = $this->icon ? '<br/><img src="' . WC_HTTPS::force_https_url( $this->icon ) . '" alt="' . esc_attr( $this->get_title() ) . '" width="300" />' : '';
+			$icon = $this->icon ? '<br/><img src="' . WC_HTTPS::force_https_url( $this->icon ) . '" alt="' . esc_attr( $this->get_title() ) . '" width="200" />' : '';
 
 			return apply_filters( 'woocommerce_gateway_icon', $icon, $this->id );
 		}

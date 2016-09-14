@@ -35,7 +35,7 @@ if($request){
 	}
 ?>
 	<div style="text-align: center;margin-top: 50px;">
-		<table style="margin: auto;max-width: 100%;" >
+		<table style="margin: auto;width: 100%;max-width: 500px;" >
 			<tr align="center">
 				<th colspan="2">DATOS DEL PAGO</th>
 			</tr>
