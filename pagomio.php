@@ -21,7 +21,6 @@ function woocommerce_pagomio_gateway() {
 		 */
 		public function __construct(){
 			$this->id					= 'pagomio';
-			$this->icon					= plugins_url('/img/franquicias-pagomio-logo.png', __FILE__);
 			$this->has_fields			= false;
 			$this->method_title			= 'Pagomío';
 			$this->method_description	= 'Incrementa el valor de tus negocios recibiendo dinero de todo el mundo.';
@@ -29,10 +28,11 @@ function woocommerce_pagomio_gateway() {
 			$this->init_form_fields();
 			$this->init_settings();
 
-			$this->title = $this->settings['title'];
+			$this->title      = $this->settings['title'];
 			$this->cliente_id = $this->settings['client_id'];
-			$this->secret_id = $this->settings['secret_id'];
-			$this->sandbox = $this->settings['sandbox'];
+			$this->secret_id  = $this->settings['secret_id'];
+			$this->sandbox    = $this->settings['sandbox'];
+			$this->icon       = $this->settings['icon'];
 
 			if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=' )) {
                 add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
@@ -61,6 +61,11 @@ function woocommerce_pagomio_gateway() {
                     'type'=> 'text',
                     'description' =>'Título que el usuario verá durante checkout.',
                     'default' => 'Pagomío'),
+                'icon' => array(
+                    'title' => 'Icono',
+                    'type'=> 'text',
+                    'description' => 'Imagen que aparece junto al nombre del gateway',
+                    'default' => plugins_url('/img/franquicias-pagomio-logo.png', __FILE__)),
                 'client_id' => array(
                     'title' => 'Client ID',
                     'type' => 'text',
@@ -217,7 +222,7 @@ function woocommerce_pagomio_gateway() {
 		 */
 		public function get_icon() {
 
-			$icon = $this->icon ? '<br/><img src="' . WC_HTTPS::force_https_url( $this->icon ) . '" alt="' . esc_attr( $this->get_title() ) . '" width="200" />' : '';
+			$icon = $this->icon ? '<img src="' .  $this->icon  . '" alt="' . esc_attr( $this->get_title() ) . '" class="pagomio-gateway-image" />' : '';
 
 			return apply_filters( 'woocommerce_gateway_icon', $icon, $this->id );
 		}
