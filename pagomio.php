@@ -40,6 +40,8 @@ function woocommerce_pagomio_gateway() {
                 add_action( 'woocommerce_update_options_payment_gateways', array( &$this, 'process_admin_options' ) );
             }
 			add_action('woocommerce_receipt_pagomio', array(&$this, 'receipt_page'));
+
+			add_action('woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'check_response' ) );
 		}
 
 		/**
@@ -113,6 +115,58 @@ function woocommerce_pagomio_gateway() {
 		}
 
 		/**
+		 * Funcion llamada por WooCommerce para registrar el pago realizado
+		 *
+		 * @access public
+		 * @return void
+		 * @author Mario Yepes <mario.yepes@dazzet.co>
+		 */
+		function check_response() {
+			$order = new WC_Order($_REQUEST['order_id']);
+			$redirect_url = $order->get_checkout_order_received_url();
+			$pagomio = $this->getPagomioObject();
+
+			// Para los mensajes de WC
+			$type = 'woocommerce-message';
+			$msg = 'Pago aprobado por Pagomio';
+
+			try {
+				$request = $pagomio->getRequestPayment();
+			} catch (Exception $e) {
+				$request = null;
+			}
+			if (is_null($request)) die ('<h1>Transacción Inválida</h1>');
+
+			switch ($request->status) {
+				case \Pagomio\Pagomio::TRANSACTION_SUCCESS:
+					$order->add_order_note($msg);
+					$order->payment_complete();
+					break;
+
+				case \Pagomio\Pagomio::TRANSACTION_ERROR:
+					$msg = 'Pago rechazado por Pagomio';
+					$type = 'woocommerce-error';
+					$order->update_status('failed', $msg);
+					break;
+
+				case \Pagomio\Pagomio::TRANSACTION_PENDING:
+					$msg = 'Pago marcado como pendiente por Pagomio';
+					$type = 'woocommerce-info';
+					$order->update_status('on-hold', $msg);
+					break;
+			}
+
+			wp_redirect(
+				add_query_arg(
+					array( 'msg' => urlencode($msg), 'type' => $type),
+					$order->get_checkout_order_received_url()
+				)
+			);
+			exit;
+		}
+
+
+		/**
 		 * @return \Pagomio\Pagomio
 		 */
 		public function getPagomioObject(){
@@ -170,7 +224,7 @@ function woocommerce_pagomio_gateway() {
 
 			// Url return to after payment
 			$enterpriseData = new Pagomio\EnterpriseData();
-			$enterpriseData->url_redirect = site_url() . '/wp-content/plugins/woocommerce-gateway-pagomio/response.php';
+			$enterpriseData->url_redirect = site_url() . '/?wc-api='.get_class($this).'&order_id='.$order_id;
 			$enterpriseData->url_notify = site_url() . '/wp-content/plugins/woocommerce-gateway-pagomio/confirmation.php';
 
 			// Create the object
@@ -237,3 +291,5 @@ function woocommerce_pagomio_gateway() {
 	}
 	add_filter('woocommerce_payment_gateways', 'add_pagomio' );
 }
+
+// vim: noet
