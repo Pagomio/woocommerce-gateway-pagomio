@@ -158,6 +158,8 @@ function woocommerce_pagomio_gateway() {
 			$userData->identificationType = 'CC'; # Allow: CC, TI, PT, NIT
 			$userData->identification = '0';
 			$userData->email = $order->billing_email;
+            $userData->phone = $order->billing_phone;
+            $userData->address = $order->billing_address_1;
 
 			// Payment information - Is required
 			$paymentData = new Pagomio\PaymentData();

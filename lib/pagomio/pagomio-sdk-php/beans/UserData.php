@@ -30,4 +30,14 @@ class UserData {
      */
     public $email;
 
+    /**
+     * @var phone
+     */
+    public $phone;
+
+    /**
+     * @var address
+     */
+    public $address;
+
 }
